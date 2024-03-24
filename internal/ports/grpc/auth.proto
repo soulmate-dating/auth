@@ -1,0 +1,48 @@
+
+syntax = "proto3";
+
+package auth;
+option go_package = "github.com/soulmate-dating/auth/internal/ports/grpc";
+
+service AuthService {
+  rpc SignUp(SignUpRequest) returns (TokenResponse) {}
+  rpc Login(LoginRequest) returns (TokenResponse) {}
+  rpc Logout(LogoutRequest) returns (UserResponse) {}
+  rpc Refresh(RefreshRequest) returns (TokenResponse) {}
+  rpc Validate(ValidateRequest) returns (UserResponse) {}
+}
+
+message SignUpRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LogoutRequest {
+  string accessToken = 2;
+}
+
+message RefreshRequest {
+  string refreshToken = 2;
+}
+
+message TokenResponse {
+  string id = 1;
+  string accessToken = 2;
+  string refreshToken = 3;
+}
+
+message ValidateRequest {
+  string accessToken = 2;
+}
+
+message UserResponse {
+  string id = 1;
+}
+
+
+
