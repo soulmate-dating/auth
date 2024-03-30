@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -24,18 +25,18 @@ func NewRepo(pool *pgxpool.Pool) *Repo {
 	}
 }
 
-func (r *Repo) CreateUser(ctx context.Context, p *models.User) (string, error) {
+func (r *Repo) CreateUser(ctx context.Context, p *models.User) (uuid.UUID, error) {
 	var args []any
 	args = append(args,
 		p.ID, p.Email, p.Password,
 	)
 	rows, err := r.pool.Query(ctx, createUserQuery, args...)
 	if err != nil {
-		return "", fmt.Errorf("create profile: %w", err)
+		return uuid.UUID{}, fmt.Errorf("create profile: %w", err)
 	}
 	userID, err := pgx.CollectOneRow(rows, r.mapUserIDs)
 	if err != nil {
-		return "", fmt.Errorf("map id: %w", err)
+		return uuid.UUID{}, fmt.Errorf("map id: %w", err)
 	}
 	return userID.ID, nil
 }

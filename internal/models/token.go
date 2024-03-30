@@ -1,7 +1,9 @@
 package models
 
+import "github.com/google/uuid"
+
 type Token struct {
-	Id           string
+	Id           uuid.UUID
 	AccessToken  string
 	RefreshToken string
 }

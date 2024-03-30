@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -26,7 +27,7 @@ type App interface {
 }
 
 type Repository interface {
-	CreateUser(ctx context.Context, p *models.User) (string, error)
+	CreateUser(ctx context.Context, p *models.User) (uuid.UUID, error)
 	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
 	//UpdateLoginStatus(ctx context.Context, uid string, b bool) error
 }
@@ -41,7 +42,7 @@ func (a *Application) Validate(ctx context.Context, token string) (string, error
 	if err != nil {
 		return "", err
 	}
-	return claims.Id, nil
+	return claims.Id.String(), nil
 }
 
 func (a *Application) Logout(ctx context.Context, token string) (string, error) {
@@ -49,7 +50,7 @@ func (a *Application) Logout(ctx context.Context, token string) (string, error) 
 	if err != nil {
 		return "", err
 	}
-	return claims.Id, nil
+	return claims.Id.String(), nil
 }
 
 func (a *Application) SignUp(ctx context.Context, email string, password string) (*models.Token, error) {

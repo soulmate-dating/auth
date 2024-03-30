@@ -1,6 +1,6 @@
 CREATE TABLE users
 (
-    id         TEXT,
+    id         uuid,
     email      TEXT UNIQUE NOT NULL,
     password   TEXT,
 --     logged_in  BOOLEAN,
