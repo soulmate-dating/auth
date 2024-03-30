@@ -1,4 +1,6 @@
-CREATE TABLE users
+CREATE SCHEMA auth;
+
+CREATE TABLE auth.users
 (
     id         uuid,
     email      TEXT UNIQUE NOT NULL,
