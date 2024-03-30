@@ -16,7 +16,7 @@ services:
       - postgres
 
   postgres:
-    container_name: postgres_auth
+    container_name: postgres
     image: postgres:latest
     environment:
       POSTGRES_DATABASE: glimpse_users
@@ -24,9 +24,9 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_HOST_AUTH_METHOD: trust
       PGDATA: /data/postgres
-      PGPORT: 5433
+      PGPORT: 5432
     ports:
-      - "5433:5433"
+      - "5432:5432"
     volumes:
       - /data/postgres
       - .\internal\adapters\postgres\migrations\tables.up.sql:/docker-entrypoint-initdb.d/init.sql
