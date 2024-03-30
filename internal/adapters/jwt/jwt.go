@@ -40,7 +40,7 @@ func (w *Wrapper) generateToken(user *models.User, expirationHours int64) (signe
 		Id:    user.ID,
 		Email: user.Email,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().Add(time.Second * time.Duration(expirationHours)).Unix(),
+			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(expirationHours)).Unix(),
 			Issuer:    w.Issuer,
 		},
 	}

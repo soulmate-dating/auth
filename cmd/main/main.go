@@ -23,7 +23,7 @@ func main() {
 	ctx := context.Background()
 
 	dbConn, err := postgres.Connect()
-	jwt := jwt.NewWrapper("secret-key", "auth-service", 60, 5*60)
+	jwt := jwt.NewWrapper("secret-key", "auth-service", 7*24, 30*24)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
