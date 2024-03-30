@@ -1,0 +1,162 @@
+
+name: Go CI & CD
+
+on: 
+  pull_request: 
+  push:
+     branches: [main, master, develop]
+     tags:
+      - "v*.*.*"
+
+jobs:
+
+  build:
+    name: Build, Test & Upload
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      app_name: app_${{ matrix.os }}
+      
+    steps:
+    - name: Cache Go modules
+      uses: actions/cache@preview
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ matrix.os }}-build-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ matrix.OS }}-build-${{ env.cache-name }}-
+          ${{ matrix.OS }}-build-
+          ${{ matrix.OS }}-
+    
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 'stable'
+
+    - name: Build
+      run: |
+          go mod tidy
+          go build -v ./...
+    
+    - name: Run go vet
+      run: go vet ./...
+
+    - name: Install staticcheck
+      run: go install honnef.co/go/tools/cmd/staticcheck@latest
+
+    - name: Run staticcheck
+      run: staticcheck ./...
+      
+    - name: Lint
+#       continue-on-error: true
+      uses: golangci/golangci-lint-action@v3
+      with:
+        version: latest
+        working-directory: .
+
+    - name: Test
+      run: |
+          go mod tidy
+          go test  -v -race -coverpkg=./... ./... -json > TestResults-${{ matrix.OS }}.json
+          
+    - name: Upload Go test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: Go-results-${{ matrix.OS }}
+        path: TestResults-${{ matrix.OS }}.json
+    
+    - name: Build Object Main
+      run: |
+          go mod tidy
+          go build -o ${{ env.app_name }} cmd/main/main.go
+          
+    - name: Upload an Object
+      uses: actions/upload-artifact@v3.1.2
+      with:
+        name: app_matrix
+        path: ${{ env.app_name }}
+        retention-days: 7
+        
+  notify:
+    name: Notify
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ github.ref_type != 'tag' }}
+    steps:
+      - name: Send message to telegram
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+#           document: app_*.*
+          message: |
+            soulmate-dating/auth
+            ${{ github.actor }} created commit:
+            Commit message: ${{ github.event.commits[0].message }}
+
+            Repository: https://github.com/${{ github.repository }}
+
+            See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
+            
+            DockerHub: ${{ secrets.DOCKERHUB_LINK }}
+
+            
+  build_image:
+    name: Build & Push Docker Image
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2.1.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v4.4.0
+        with:
+          images: my-docker-hub-namespace/my-docker-hub-repository
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: maxage/auth:${{ steps.meta.outputs.version }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: build_image
+    if: ${{ github.ref_type == 'tag' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Release
+        uses: softprops/action-gh-release@v1
+    
+      - name: Send message to telegram
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            ${{ github.actor }} created new release:
+            Tag: ${{ github.ref_name }}
+
+            Repository: https://github.com/${{ github.repository }}
+            
+            DockerHub: ${{ secrets.DOCKERHUB_LINK }}
