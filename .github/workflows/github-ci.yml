@@ -15,11 +15,10 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     env:
-      app_name: app_${{ matrix.os }}.o
-      app_name_exe: app_${{ matrix.os }}.exe
+      app_name: app_${{ matrix.os }}
       
     steps:
     - name: Cache Go modules
@@ -74,57 +73,23 @@ jobs:
         path: TestResults-${{ matrix.OS }}.json
     
     - name: Build Object Main
-      if: ${{ matrix.OS != 'windows-latest' }}
       run: |
           go mod tidy
           go build -o ${{ env.app_name }} cmd/main/main.go
           
-    - name: Build Executable Main
-      if: ${{ matrix.OS == 'windows-latest' }}
-      run: |
-          go mod tidy
-          go build -o ${{ env.app_name_exe }} cmd/main/main.go
-      
     - name: Upload an Object
       uses: actions/upload-artifact@v3.1.2
       with:
         name: app_matrix
         path: ${{ env.app_name }}
         retention-days: 7
-  
-    - name: Upload an Executable
-      uses: actions/upload-artifact@v3.1.2
-      with:
-        name: app_matrix
-        path: ${{ env.app_name_exe }}
-        retention-days: 7
         
-  upload:
-    name: Upload to Drive & Notify
+  notify:
+    name: Notify
     needs: build
     runs-on: ubuntu-latest
     if: ${{ github.ref_type != 'tag' }}
     steps:
-      - name: Download Artefacts
-        uses: actions/download-artifact@v3
-        with:
-          name: app_matrix
-          
-      - name: Archive files
-        run: |
-          sudo apt-get update
-          sudo apt-get install zip
-          zip -r app-builds.zip app_*.*
-      
-      - name: Upload to Google Drive
-        uses: adityak74/google-drive-upload-git-action@main
-        with:
-          credentials: ${{ secrets.DRIVE_CREDENTIALS }}
-          filename: "app-builds.zip"
-          folderId: ${{ secrets.DRIVE_FOLDER_ID }}
-          name: "app-builds-${{ github.ref_name }}.zip"
-          overwrite: "true"
-        
       - name: Send message to telegram
         uses: appleboy/telegram-action@master
         with:
@@ -138,8 +103,6 @@ jobs:
             Repository: https://github.com/${{ github.repository }}
 
             See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
-            
-            Google Drive: ${{ secrets.DRIVE_LINK }}
             
             DockerHub: ${{ secrets.DOCKERHUB_LINK }}
 
@@ -170,7 +133,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: maxage/ad-service:${{ steps.meta.outputs.version }}
+          tags: maxage/profiles:${{ steps.meta.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
 
   release:
