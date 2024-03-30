@@ -16,6 +16,7 @@ services:
       - postgres
 
   postgres:
+    container_name: postgres_auth
     image: postgres:latest
     environment:
       POSTGRES_DATABASE: glimpse_users
