@@ -104,8 +104,6 @@ jobs:
 
             See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
             
-            Google Drive: ${{ secrets.DRIVE_LINK }}
-            
             DockerHub: ${{ secrets.DOCKERHUB_LINK }}
 
             
@@ -135,7 +133,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: maxage/ad-service:${{ steps.meta.outputs.version }}
+          tags: maxage/profiles:${{ steps.meta.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
 
   release:
