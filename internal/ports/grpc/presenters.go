@@ -12,7 +12,7 @@ var ErrMissingArgument = errors.New("required argument is missing")
 
 func TokenSuccessResponse(p *models.Token) *TokenResponse {
 	return &TokenResponse{
-		Id:           p.Id,
+		Id:           p.Id.String(),
 		AccessToken:  p.AccessToken,
 		RefreshToken: p.RefreshToken,
 	}
