@@ -97,6 +97,7 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
 #           document: app_*.*
           message: |
+            soulmate-dating/auth
             ${{ github.actor }} created commit:
             Commit message: ${{ github.event.commits[0].message }}
 
@@ -133,7 +134,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: maxage/profiles:${{ steps.meta.outputs.version }}
+          tags: maxage/auth:${{ steps.meta.outputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
 
   release:
