@@ -1,7 +1,7 @@
 package jwt
 
 import (
-	"errors"
+	"fmt"
 	"github.com/soulmate-dating/auth/internal/models"
 	"time"
 
@@ -64,19 +64,17 @@ func (w *Wrapper) ValidateToken(signedToken string) (claims *models.Claims, err 
 			return []byte(w.SecretKey), nil
 		},
 	)
-
 	if err != nil {
-		return
+		return nil, fmt.Errorf("%w: %w", models.ErrInvalidToken, err)
 	}
 
 	claims, ok := token.Claims.(*models.Claims)
-
 	if !ok {
-		return nil, errors.New("couldn't parse claims")
+		return nil, models.ErrFailedToParseClaims
 	}
 
 	if claims.ExpiresAt < time.Now().Local().Unix() {
-		return nil, errors.New("JWT is expired")
+		return nil, models.ErrExpiredToken
 	}
 
 	return claims, nil
