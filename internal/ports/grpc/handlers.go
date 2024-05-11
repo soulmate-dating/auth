@@ -2,11 +2,17 @@ package grpc
 
 import (
 	"context"
+
 	"google.golang.org/grpc/status"
+
+	"github.com/soulmate-dating/auth/internal/models"
 )
 
 func (s *AuthService) SignUp(ctx context.Context, request *SignUpRequest) (*TokenResponse, error) {
-	token, err := s.app.SignUp(ctx, request.GetEmail(), request.GetPassword())
+	token, err := s.app.SignUp(ctx, models.LoginCredentials{
+		Email:    request.GetEmail(),
+		Password: request.GetPassword(),
+	})
 	if err != nil {
 		return nil, status.Error(GetErrorCode(err), err.Error())
 	}
@@ -14,7 +20,10 @@ func (s *AuthService) SignUp(ctx context.Context, request *SignUpRequest) (*Toke
 }
 
 func (s *AuthService) Login(ctx context.Context, request *LoginRequest) (*TokenResponse, error) {
-	token, err := s.app.Login(ctx, request.GetEmail(), request.GetPassword())
+	token, err := s.app.Login(ctx, models.LoginCredentials{
+		Email:    request.GetEmail(),
+		Password: request.GetPassword(),
+	})
 	if err != nil {
 		return nil, status.Error(GetErrorCode(err), err.Error())
 	}
