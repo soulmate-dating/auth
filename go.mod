@@ -3,7 +3,6 @@ module github.com/soulmate-dating/auth
 go 1.20
 
 require (
-	github.com/TobbyMax/validator v1.2.3
 	github.com/go-playground/validator/v10 v10.20.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
@@ -24,7 +23,6 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/puddle/v2 v2.2.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
