@@ -75,12 +75,12 @@ func (a *Application) SignUp(ctx context.Context, credentials models.LoginCreden
 }
 
 func (a *Application) signup(ctx context.Context, credentials models.LoginCredentials) (*models.User, error) {
-	user, err := a.repository.GetUserByEmail(ctx, credentials.Email)
+	_, err := a.repository.GetUserByEmail(ctx, credentials.Email)
 	if err == nil {
 		return nil, models.ErrAlreadyExists
 	}
 
-	user = &models.User{
+	user := &models.User{
 		ID:       models.NewUUID(),
 		Email:    credentials.Email,
 		Password: hash.HashPassword(credentials.Password),
