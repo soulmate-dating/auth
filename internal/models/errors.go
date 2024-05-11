@@ -10,4 +10,5 @@ var (
 	ErrWrongPassword       = errors.New("passwords do not match")
 	ErrFailedToParseClaims = errors.New("failed to parse jwt claims")
 	ErrInvalidToken        = errors.New("invalid token")
+	ErrExpiredToken        = errors.New("token has expired")
 )

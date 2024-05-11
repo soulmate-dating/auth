@@ -123,7 +123,7 @@ func (a *Application) Refresh(ctx context.Context, token string) (*models.Token,
 	}
 	user, err := a.repository.GetUserByEmail(ctx, claims.Email)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get user by email: %w", err)
 	}
 
 	return a.generateTokenForUser(user)

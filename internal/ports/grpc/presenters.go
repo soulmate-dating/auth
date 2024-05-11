@@ -25,7 +25,9 @@ func GetErrorCode(err error) codes.Code {
 		return codes.NotFound
 	case errors.Is(err, models.ErrAlreadyExists):
 		return codes.AlreadyExists
-	case errors.Is(err, models.ErrInvalidToken) || errors.Is(err, models.ErrWrongPassword):
+	case errors.Is(err, models.ErrInvalidToken) ||
+		errors.Is(err, models.ErrWrongPassword) ||
+		errors.Is(err, models.ErrExpiredToken):
 		return codes.Unauthenticated
 	}
 	return codes.Internal

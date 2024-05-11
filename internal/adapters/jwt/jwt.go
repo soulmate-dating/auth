@@ -73,5 +73,9 @@ func (w *Wrapper) ValidateToken(signedToken string) (claims *models.Claims, err 
 		return nil, models.ErrFailedToParseClaims
 	}
 
+	if claims.ExpiresAt < time.Now().Local().Unix() {
+		return nil, models.ErrExpiredToken
+	}
+
 	return claims, nil
 }
