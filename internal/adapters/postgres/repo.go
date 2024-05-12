@@ -4,27 +4,28 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/soulmate-dating/auth/internal/models"
+
+	"github.com/soulmate-dating/auth/internal/domain"
 )
 
 type Repo struct {
 	pool       ConnPool
-	mapUsers   func(row pgx.CollectableRow) (models.User, error)
-	mapUserIDs func(row pgx.CollectableRow) (models.UserID, error)
+	mapUsers   func(row pgx.CollectableRow) (domain.User, error)
+	mapUserIDs func(row pgx.CollectableRow) (domain.UserID, error)
 }
 
 func NewRepo(pool ConnPool) *Repo {
 	return &Repo{
 		pool:       pool,
-		mapUsers:   pgx.RowToStructByName[models.User],
-		mapUserIDs: pgx.RowToStructByName[models.UserID],
+		mapUsers:   pgx.RowToStructByName[domain.User],
+		mapUserIDs: pgx.RowToStructByName[domain.UserID],
 	}
 }
 
-func (r *Repo) CreateUser(ctx context.Context, p *models.User) (uuid.UUID, error) {
+func (r *Repo) CreateUser(ctx context.Context, p *domain.User) (uuid.UUID, error) {
 	var args []any
 	args = append(args,
 		p.ID, p.Email, p.Password,
@@ -40,7 +41,7 @@ func (r *Repo) CreateUser(ctx context.Context, p *models.User) (uuid.UUID, error
 	return userID.ID, nil
 }
 
-func (r *Repo) GetUserByEmail(ctx context.Context, id string) (*models.User, error) {
+func (r *Repo) GetUserByEmail(ctx context.Context, id string) (*domain.User, error) {
 	rows, err := r.pool.GetTx(ctx).Query(ctx, getUserByEmailQuery, id)
 	if err != nil {
 		return nil, fmt.Errorf("get user by id: %w", err)
@@ -48,7 +49,7 @@ func (r *Repo) GetUserByEmail(ctx context.Context, id string) (*models.User, err
 	profile, err := pgx.CollectOneRow(rows, r.mapUsers)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, models.ErrUserNotFound
+			return nil, domain.ErrUserNotFound
 		}
 		return nil, fmt.Errorf("map user: %w", err)
 	}
