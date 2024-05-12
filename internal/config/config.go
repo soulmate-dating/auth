@@ -7,24 +7,24 @@ import (
 )
 
 type Postgres struct {
-	Host              string        `env:"POSTGRES_HOST" example:"localhost"`
+	Host              string        `env:"POSTGRES_HOST,required" example:"localhost"`
 	Port              int           `env:"POSTGRES_PORT" envDefault:"5432"`
-	User              string        `env:"POSTGRES_USER" example:"glimpse"`
-	Password          string        `env:"POSTGRES_PASSWORD" example:"password"`
-	Database          string        `env:"POSTGRES_DB" example:"glimpse"`
+	User              string        `env:"POSTGRES_USER,required" example:"glimpse"`
+	Password          string        `env:"POSTGRES_PASSWORD,required" example:"password"`
+	Database          string        `env:"POSTGRES_DB,required" example:"glimpse"`
 	SSLMode           string        `env:"POSTGRES_SSL_MODE" envDefault:"disable"`
 	ConnectionTimeout time.Duration `env:"POSTGRES_CONNECTION_TIMEOUT" envDefault:"60s"`
 }
 
 type API struct {
 	Network string `env:"API_NETWORK" envDefault:"tcp"`
-	Address string `env:"API_ADDRESS" envDefault:"localhost:8080"`
+	Address string `env:"API_ADDRESS,required" example:"localhost:8080"`
 }
 
 type JWT struct {
-	SecretKey              string        `env:"JWT_ACCESS_SECRET"`
-	RefreshSecretKey       string        `env:"JWT_REFRESH_SECRET"`
-	Issuer                 string        `env:"JWT_ISSUER"`
+	SecretKey              string        `env:"JWT_ACCESS_SECRET,required"`
+	RefreshSecretKey       string        `env:"JWT_REFRESH_SECRET,required"`
+	Issuer                 string        `env:"JWT_ISSUER,required"`
 	AccessExpirationHours  time.Duration `env:"JWT_ACCESS_EXPIRATION" envDefault:"24h"`
 	RefreshExpirationHours time.Duration `env:"JWT_REFRESH_EXPIRATION" envDefault:"720h"`
 }
