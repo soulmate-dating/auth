@@ -145,9 +145,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Release
-        uses: softprops/action-gh-release@v1
-    
       - name: Send message to telegram
         uses: appleboy/telegram-action@master
         with:
