@@ -2,53 +2,53 @@ package jwt
 
 import (
 	"fmt"
-	"github.com/soulmate-dating/auth/internal/models"
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/soulmate-dating/auth/internal/domain"
 )
 
 type Wrapper struct {
 	SecretKey              string
+	RefreshSecretKey       string
 	Issuer                 string
-	AccessExpirationHours  int64
-	RefreshExpirationHours int64
+	AccessTokenExpiration  time.Duration
+	RefreshTokenExpiration time.Duration
 }
 
 func NewWrapper(
-	secretKey, issuer string,
-	accessExpirationHours, refreshExpirationHours int64,
+	issuer, secretKey, refreshSecretKey string,
+	accessExpirationHours, refreshExpirationHours time.Duration,
 ) *Wrapper {
 	return &Wrapper{
 		SecretKey:              secretKey,
+		RefreshSecretKey:       refreshSecretKey,
 		Issuer:                 issuer,
-		AccessExpirationHours:  accessExpirationHours,
-		RefreshExpirationHours: refreshExpirationHours,
+		AccessTokenExpiration:  accessExpirationHours,
+		RefreshTokenExpiration: refreshExpirationHours,
 	}
 }
 
-func (w *Wrapper) GenerateAccessToken(user *models.User) (string, error) {
-	return w.generateToken(user, w.AccessExpirationHours)
+func (w *Wrapper) GenerateAccessToken(user *domain.User) (string, error) {
+	return w.generateToken(user, w.AccessTokenExpiration, w.SecretKey)
 }
 
-func (w *Wrapper) GenerateRefreshToken(user *models.User) (string, error) {
-	return w.generateToken(user, w.RefreshExpirationHours)
+func (w *Wrapper) GenerateRefreshToken(user *domain.User) (string, error) {
+	return w.generateToken(user, w.RefreshTokenExpiration, w.RefreshSecretKey)
 }
 
-func (w *Wrapper) generateToken(user *models.User, expirationHours int64) (signedToken string, err error) {
-	claims := &models.Claims{
+func (w *Wrapper) generateToken(user *domain.User, expiration time.Duration, secretKey string) (signedToken string, err error) {
+	claims := &domain.Claims{
 		Id:    user.ID,
 		Email: user.Email,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(expirationHours)).Unix(),
+			ExpiresAt: time.Now().Local().Add(expiration).Unix(),
 			Issuer:    w.Issuer,
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	signedToken, err = token.SignedString([]byte(w.SecretKey))
-
+	signedToken, err = token.SignedString([]byte(secretKey))
 	if err != nil {
 		return "", err
 	}
@@ -56,25 +56,33 @@ func (w *Wrapper) generateToken(user *models.User, expirationHours int64) (signe
 	return signedToken, nil
 }
 
-func (w *Wrapper) ValidateToken(signedToken string) (claims *models.Claims, err error) {
+func (w *Wrapper) ValidateAccessToken(signedToken string) (claims *domain.Claims, err error) {
+	return w.validateToken(signedToken, w.SecretKey)
+}
+
+func (w *Wrapper) ValidateRefreshToken(signedToken string) (claims *domain.Claims, err error) {
+	return w.validateToken(signedToken, w.RefreshSecretKey)
+}
+
+func (w *Wrapper) validateToken(signedToken, secretKey string) (claims *domain.Claims, err error) {
 	token, err := jwt.ParseWithClaims(
 		signedToken,
-		&models.Claims{},
+		&domain.Claims{},
 		func(token *jwt.Token) (interface{}, error) {
-			return []byte(w.SecretKey), nil
+			return []byte(secretKey), nil
 		},
 	)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", models.ErrInvalidToken, err)
+		return nil, fmt.Errorf("%w: %w", domain.ErrInvalidToken, err)
 	}
 
-	claims, ok := token.Claims.(*models.Claims)
+	claims, ok := token.Claims.(*domain.Claims)
 	if !ok {
-		return nil, models.ErrFailedToParseClaims
+		return nil, domain.ErrFailedToParseClaims
 	}
 
 	if claims.ExpiresAt < time.Now().Local().Unix() {
-		return nil, models.ErrExpiredToken
+		return nil, domain.ErrExpiredToken
 	}
 
 	return claims, nil

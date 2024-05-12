@@ -4,6 +4,21 @@ services:
 
   auth:
     container_name: auth
+    env_file:
+      - .\cmd\main\.env
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=glimpse
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=glimpse
+      - POSTGRES_SSL_MODE=disable
+      - API_ADDRESS=auth:8081
+      - JWT_ACCESS_SECRET=secret
+      - JWT_ACCESS_EXPIRATION=24h
+      - JWT_REFRESH_SECRET=refresh_secret
+      - JWT_REFRESH_EXPIRATION=720h
+      - JWT_ISSUER=glimpse
     build:
       context: .
       dockerfile: Dockerfile

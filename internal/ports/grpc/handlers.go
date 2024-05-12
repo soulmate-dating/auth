@@ -5,11 +5,11 @@ import (
 
 	"google.golang.org/grpc/status"
 
-	"github.com/soulmate-dating/auth/internal/models"
+	"github.com/soulmate-dating/auth/internal/domain"
 )
 
 func (s *AuthService) SignUp(ctx context.Context, request *SignUpRequest) (*TokenResponse, error) {
-	token, err := s.app.SignUp(ctx, models.LoginCredentials{
+	token, err := s.app.SignUp(ctx, domain.LoginCredentials{
 		Email:    request.GetEmail(),
 		Password: request.GetPassword(),
 	})
@@ -20,7 +20,7 @@ func (s *AuthService) SignUp(ctx context.Context, request *SignUpRequest) (*Toke
 }
 
 func (s *AuthService) Login(ctx context.Context, request *LoginRequest) (*TokenResponse, error) {
-	token, err := s.app.Login(ctx, models.LoginCredentials{
+	token, err := s.app.Login(ctx, domain.LoginCredentials{
 		Email:    request.GetEmail(),
 		Password: request.GetPassword(),
 	})
