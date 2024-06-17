@@ -29,10 +29,15 @@ type JWT struct {
 	RefreshExpirationHours time.Duration `env:"JWT_REFRESH_EXPIRATION" envDefault:"720h"`
 }
 
+type Metrics struct {
+	Address string `env:"METRICS_ADDRESS,required" example:":8080"`
+}
+
 type Config struct {
 	Postgres Postgres
 	API      API
 	JWT      JWT
+	Metrics  Metrics
 }
 
 func Load() (Config, error) {
